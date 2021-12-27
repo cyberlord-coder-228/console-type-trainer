@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <time.h>
 
+
 enum
 {
     RED_BACKGROUND_NUM  = 1,
@@ -11,20 +12,21 @@ enum
 
 char* LATIN_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
+
 char get_rand_letter(char* arr, int arr_length)
 {
     return arr[rand() % arr_length];
 }
 
 float simple_exercise(
-    int amount_of_symbols,  // determines duration of an exercise
+    int amount_of_symbols,  // Determines duration of an exercise
     char* letters_to_practise,
     int arr_length
 )
 {
     int mistakes = 0;
-
     int start_line = 0;
+
     for (int i = 0; i < amount_of_symbols; i++)
     {
         char rand_char = get_rand_letter(letters_to_practise, arr_length);
@@ -34,7 +36,6 @@ float simple_exercise(
         char user_input = getch();
 
         int color_num;
-
         if (rand_char == user_input)
         {
             color_num = GREEN_BACKGROUND_NUM;
@@ -50,10 +51,8 @@ float simple_exercise(
         refresh();
         attroff(COLOR_PAIR(color_num));
     }
-
-    float ratio_of_correct_to_all =
-        1.0 * (amount_of_symbols - mistakes) / amount_of_symbols;
-    return ratio_of_correct_to_all;
+        
+    return 1.0 * (amount_of_symbols - mistakes) / amount_of_symbols;
 }
 
 int main()
@@ -72,18 +71,16 @@ int main()
     init_pair(GREEN_BACKGROUND_NUM, COLOR_BLACK, COLOR_GREEN);
 
     float ratio = simple_exercise(
-        60,     // 60 symbols will br generated until function
-        "jf ",  // user will practice symbols 'j', 'f', and space
-        3       // length of a symbols array
+        60,     // 60 symbols will be generated until function terminates
+        "jf ",  // User will practice symbols 'j', 'f', and space
+        3       // Length of a symbols array
     );
     
-    printw("\n\nYour accuracy was %.1f percent,", ratio*100);
-    printw("you've done great!");
-    printw("\nType in anything to finish practicing.");
+    printw("\n\nYour accuracy was %.1f percent, you've done great!", ratio*100);
+    printw("\n(Type in anything to finish practicing.)");
     refresh();
 
-    getch();                    // takes a second to appriciate what user has done
-
+    getch();                    // Stops program from terminating immediately
     endwin();                   // Ends ncurses mode
 
     return 0;
