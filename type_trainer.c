@@ -16,12 +16,14 @@ char get_rand_letter(char* arr, int arr_length)
     return arr[rand() % arr_length];
 }
 
-int simple_exercise(
-    int amount_of_symbols,	// determines duration of an exercise
+float simple_exercise(
+    int amount_of_symbols,  // determines duration of an exercise
     char* letters_to_practise,
     int arr_length
 )
 {
+    int mistakes = 0;
+
     int start_line = 0;
     for (int i = 0; i < amount_of_symbols; i++)
     {
@@ -39,6 +41,7 @@ int simple_exercise(
         }
         else
         {
+            mistakes++;
             color_num = RED_BACKGROUND_NUM;
         }
 
@@ -46,7 +49,11 @@ int simple_exercise(
         mvaddch(start_line, i, rand_char);
         refresh();
         attroff(COLOR_PAIR(color_num));
-     }
+    }
+
+    float ratio_of_correct_to_all =
+        1.0 * (amount_of_symbols - mistakes) / amount_of_symbols;
+    return ratio_of_correct_to_all;
 }
 
 int main()
@@ -63,11 +70,19 @@ int main()
 
     init_pair(RED_BACKGROUND_NUM, COLOR_BLACK, COLOR_RED);
     init_pair(GREEN_BACKGROUND_NUM, COLOR_BLACK, COLOR_GREEN);
-    attrset(A_BOLD);
 
-    simple_exercise(60, "jf ", 3);
+    float ratio = simple_exercise(
+        60,     // 60 symbols will br generated until function
+        "jf ",  // user will practice symbols 'j', 'f', and space
+        3       // length of a symbols array
+    );
+    
+    printw("\n\nYour accuracy was %.1f percent,", ratio*100);
+    printw("you've done great!");
+    printw("\nType in anything to finish practicing.");
+    refresh();
 
-    napms(1000);                // takes a second to appriciate what user has done
+    getch();                    // takes a second to appriciate what user has done
 
     endwin();                   // Ends ncurses mode
 
