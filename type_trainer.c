@@ -1,7 +1,3 @@
-/*
- *  This app is cuurently under development. Not usage-ready.
- */
-
 #include <ncurses.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,8 +5,8 @@
 
 enum
 {
-    RED_FOREGROUND_NUM  = 1,
-    GREEN_FOREGROUND_NUM = 2
+    RED_BACKGROUND_NUM  = 1,
+    GREEN_BACKGROUND_NUM = 2
 };
 
 char* LATIN_LETTERS = "abcdefghijklmnopqrstuvwxyz";
@@ -20,12 +16,17 @@ char get_rand_letter(char* arr, int arr_length)
     return arr[rand() % arr_length];
 }
 
-int simple_practice(int amount_of_symbols)
+int simple_exercise(
+    int amount_of_symbols,	// determines duration of an exercise
+    char* letters_to_practise,
+    int arr_length
+)
 {
+    int start_line = 0;
     for (int i = 0; i < amount_of_symbols; i++)
     {
-        char rand_char = get_rand_letter(LATIN_LETTERS, 26);
-        mvaddch(0, i, rand_char);
+        char rand_char = get_rand_letter(letters_to_practise, arr_length);
+        mvaddch(start_line, i, rand_char);
         refresh();
 
         char user_input = getch();
@@ -34,15 +35,15 @@ int simple_practice(int amount_of_symbols)
 
         if (rand_char == user_input)
         {
-            color_num = GREEN_FOREGROUND_NUM;
+            color_num = GREEN_BACKGROUND_NUM;
         }
         else
         {
-            color_num = RED_FOREGROUND_NUM;
+            color_num = RED_BACKGROUND_NUM;
         }
 
         attrset(COLOR_PAIR(color_num));
-        mvaddch(0, i, rand_char);
+        mvaddch(start_line, i, rand_char);
         refresh();
         attroff(COLOR_PAIR(color_num));
      }
@@ -57,17 +58,18 @@ int main()
     cbreak();                   // Makes typed characters immediately available
     noecho();                   // Keyboard input not printed
     scrollok(stdscr, FALSE);    // Scroll disabled
-    keypad(NULL, TRUE);         // Getch returns special stuff from arrow key presses
+    keypad(NULL, TRUE);         // Getch returns special stuff from arrow keys
     start_color();              // Enables colors
 
-    init_pair(RED_FOREGROUND_NUM, COLOR_RED, COLOR_BLACK);
-    init_pair(GREEN_FOREGROUND_NUM, COLOR_GREEN, COLOR_BLACK);
+    init_pair(RED_BACKGROUND_NUM, COLOR_BLACK, COLOR_RED);
+    init_pair(GREEN_BACKGROUND_NUM, COLOR_BLACK, COLOR_GREEN);
+    attrset(A_BOLD);
 
-    simple_practice(60);
+    simple_exercise(60, "jf ", 3);
 
-    napms(1000);                // waits a second to appriciate what user has done
+    napms(1000);                // takes a second to appriciate what user has done
 
     endwin();                   // Ends ncurses mode
 
     return 0;
-} 
+}
