@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/time.h>
 
 
 enum
@@ -117,14 +118,16 @@ int main()
     // Now let`s test the prigram
     for (int i = 1; i < 16; i++)
     {
-        clock_t clock_begin = clock();
+        struct timeval start;
+        struct timeval end;
 
+        gettimeofday(&start, NULL);
         float ratio = simple_exercise(12, LEARNER_SEQUENCE, i * 2);
+        gettimeofday(&end, NULL);
 
-        clock_t clock_end = clock();
-        double time_spent_seconds = (double)(clock_end - clock_begin);
+        int time_spent_seconds  = end.tv_sec  - start.tv_sec;
 
-        print_how_good_user_was(ratio, time_spent_seconds);
+        print_how_good_user_was(ratio, (float)time_spent_seconds);
         printw("\n(Type in anything to continue.)");
         refresh();
         getch();
