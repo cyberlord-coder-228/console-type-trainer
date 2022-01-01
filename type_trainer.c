@@ -12,7 +12,7 @@ enum
 };
 
 char* LATIN_LETTERS = "abcdefghijklmnopqrstuvwxyz";             // has length 26
-char* LEARNER_SEQUENCE = " fjdksla;ghrueiwoqptyvmc,x.z/bn\'";   // has length 32
+char* LEARNER_SEQUENCE = " fjdksla;ghrueiwoqptyvmc,x.z/bn";     // has length 31
 
 
 char get_rand_letter(char* arr, int arr_length)
@@ -57,7 +57,7 @@ float simple_exercise(
     return (float)(amount_of_symbols - mistakes) / amount_of_symbols;
 }
 
-void print_how_good_user_was(float correct_ratio, float time_sec)
+void print_how_good_user_was(float correct_ratio, int lpm)
 {
     printw("\n\nYour accuracy was %.1f percent, ", correct_ratio*100);
 
@@ -96,7 +96,7 @@ void print_how_good_user_was(float correct_ratio, float time_sec)
     }
 
     printw(postfix);
-    printw("\nIt took you %.1f seconds btw", time_sec);
+    printw("\nYour average speed was %d letters per minute", lpm);
     refresh();
 }
 
@@ -116,18 +116,25 @@ int main()
     init_pair(GREEN_BACKGROUND_NUM, COLOR_BLACK, COLOR_GREEN);
 
     // Now let`s test the prigram
+    int symobols_in_exercise = 100;
     for (int i = 1; i < 16; i++)
     {
         struct timeval start;
         struct timeval end;
 
         gettimeofday(&start, NULL);
-        float ratio = simple_exercise(12, LEARNER_SEQUENCE, i * 2);
+        float ratio = simple_exercise(
+            symobols_in_exercise,
+            LEARNER_SEQUENCE,
+            1 + i * 2
+        );
         gettimeofday(&end, NULL);
 
-        int time_spent_seconds  = end.tv_sec  - start.tv_sec;
+        int time_spent_seconds = end.tv_sec - start.tv_sec;
+        int user_speed_lpm =
+            (int)(60 * (float)(symobols_in_exercise / time_spent_seconds));
 
-        print_how_good_user_was(ratio, (float)time_spent_seconds);
+        print_how_good_user_was(ratio, user_speed_lpm);
         printw("\n(Type in anything to continue.)");
         refresh();
         getch();
