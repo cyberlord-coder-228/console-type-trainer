@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
-#include <math.h>
 
 
 enum
@@ -107,6 +106,36 @@ void print_how_good_user_was(float correct_ratio, int wpm)
     refresh();
 }
 
+void test()
+{
+    int symobols_in_exercise = 47;
+
+    for (int i = 1; i < 16; i++)
+    {
+        struct timeHolder timer;
+        gettimeofday(&timer.start, NULL);
+
+        float ratio = simple_exercise(
+            symobols_in_exercise,
+            LEARNER_SEQUENCE,
+            1 + i * 2
+        );
+
+        gettimeofday(&timer.end, NULL);
+        int time_spent_seconds = timer.end.tv_sec - timer.start.tv_sec;
+
+        // wpm = typed_symbols / time (sec) * 60 (sec) / 5 (average word length)
+        int user_speed_wpm =
+            (int)(12 * (float)symobols_in_exercise / (float)time_spent_seconds);
+
+        print_how_good_user_was(ratio, user_speed_wpm);
+        printw("\n(Type in anything to continue.)");
+        refresh();
+        getch();
+        clear();
+    }
+}
+
 int main()
 {
     srand(time(NULL));
@@ -122,32 +151,7 @@ int main()
     init_pair(RED_BACKGROUND_NUM, COLOR_BLACK, COLOR_RED);
     init_pair(GREEN_BACKGROUND_NUM, COLOR_BLACK, COLOR_GREEN);
 
-    // Now let`s test the prigram
-    int symobols_in_exercise = 47;
-    for (int i = 1; i < 16; i++)
-    {
-        struct timeHolder timer;
-        
-        gettimeofday(&timer.start, NULL);
-        float ratio = simple_exercise(
-            symobols_in_exercise,
-            LEARNER_SEQUENCE,
-            1 + i * 2
-        );
-        gettimeofday(&timer.end, NULL);
-
-        int time_spent_seconds = timer.end.tv_sec - timer.start.tv_sec;
-
-        // wpm = typed_symbols / time (sec) * 60 (sec) / 5 (average word length)
-        int user_speed_wpm =
-            (int)(12 * (float)symobols_in_exercise / (float)time_spent_seconds);
-
-        print_how_good_user_was(ratio, user_speed_wpm);
-        printw("\n(Type in anything to continue.)");
-        refresh();
-        getch();
-        clear();
-    }
+    test();
 
     endwin();                   // Ends ncurses mode
 
