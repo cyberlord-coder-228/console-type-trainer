@@ -15,7 +15,7 @@ char* LATIN_LETTERS = "abcdefghijklmnopqrstuvwxyz";             // has length 26
 char* LEARNER_SEQUENCE = " fjdksla;ghrueiwoqptyvmc,x.z/bn";     // has length 31
 
 
-struct timeHolder
+struct TimeHolder
 {
     struct timeval start;
     struct timeval end;
@@ -27,9 +27,9 @@ char get_rand_letter(char* arr, int arr_length)
 }
 
 float simple_exercise(
-    int amount_of_symbols,      // Determines duration of an exercise
+    int amount_of_symbols,
     char* letters_to_practise,
-    int arr_length
+    int letters_arr_length
 )
 {
     int mistakes = 0;
@@ -37,7 +37,10 @@ float simple_exercise(
 
     for (int i = 0; i < amount_of_symbols; i++)
     {
-        char rand_char = get_rand_letter(letters_to_practise, arr_length);
+        char rand_char = get_rand_letter(
+            letters_to_practise,
+            letters_arr_length
+        );
         mvaddch(start_line, i, rand_char);
         refresh();
 
@@ -65,45 +68,28 @@ float simple_exercise(
 
 void print_how_good_user_was(float correct_ratio, int wpm)
 {
-    printw("\n\nYour accuracy was %.1f percent, ", correct_ratio*100);
-
     char* postfix;
-    if (correct_ratio == 0.0)
-    {
-        postfix = "did you even try?";
-    }
-    else if (correct_ratio < 0.2)
-    {
-        postfix = "you can do better!";
-    }
-    else if (correct_ratio < 0.4)
-    {
-        postfix = "keep practicing!";
-    }
-    else if (correct_ratio < 0.6)
-    {
-        postfix = "you are half way here!";
-    }
-    else if (correct_ratio < 0.8)
-    {
-        postfix = "you have done quite good!";
-    }
-    else if (correct_ratio < 1)
-    {
-        postfix = "you have done great!";
-    }
-    else if (correct_ratio == 1.0)
-    {
-        postfix = ". Perfect!";
-    }
-    else
-    {
-        postfix = ". Wait what? How that`s even possible?";
-    }
 
-    printw(postfix);
+    if (correct_ratio == 0.0)      postfix = "did you even try?";
+    else if (correct_ratio < 0.2)  postfix = "you can do better!";
+    else if (correct_ratio < 0.4)  postfix = "keep practicing!";
+    else if (correct_ratio < 0.6)  postfix = "you are half way here!";
+    else if (correct_ratio < 0.8)  postfix = "you have done quite good!";
+    else if (correct_ratio < 1.0)  postfix = "you have done great!";
+    else if (correct_ratio == 1.0) postfix = ". Perfect!";
+    else postfix = ". Wait what? How that`s even possible?";
+
+    printw("\nYour accuracy was %.1f percent, %s", correct_ratio*100, postfix);
     printw("\nYour average speed was %d words per minute", wpm);
     refresh();
+}
+
+void offer_next_screen()
+{
+    printw("\n(Type in anything to continue.)");
+    refresh();
+    getch();
+    clear();
 }
 
 void test()
@@ -112,7 +98,7 @@ void test()
 
     for (int i = 1; i < 16; i++)
     {
-        struct timeHolder timer;
+        struct TimeHolder timer;
         gettimeofday(&timer.start, NULL);
 
         float ratio = simple_exercise(
@@ -120,19 +106,18 @@ void test()
             LEARNER_SEQUENCE,
             1 + i * 2
         );
-
+        
         gettimeofday(&timer.end, NULL);
-        int time_spent_seconds = timer.end.tv_sec - timer.start.tv_sec;
 
+        int time_spent_seconds = timer.end.tv_sec - timer.start.tv_sec;
+        
+        // 12 is a constant from wpm equation
         // wpm = typed_symbols / time (sec) * 60 (sec) / 5 (average word length)
         int user_speed_wpm =
             (int)(12 * (float)symobols_in_exercise / (float)time_spent_seconds);
 
         print_how_good_user_was(ratio, user_speed_wpm);
-        printw("\n(Type in anything to continue.)");
-        refresh();
-        getch();
-        clear();
+        offer_next_screen();
     }
 }
 
