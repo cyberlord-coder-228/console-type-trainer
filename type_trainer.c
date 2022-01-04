@@ -12,7 +12,7 @@ enum
 };
 
 char* LATIN_LETTERS = "abcdefghijklmnopqrstuvwxyz";             // has length 26
-char* LEARNER_SEQUENCE = " fjdksla;ghrueiwoqptyvmc,x.z/bn";     // has length 31
+char* LEARNER_SEQUENCE = "fjdksla;ghrueiwoqptyvmc,x.z/bn";      // has length 30
 
 
 struct TimeHolder
@@ -26,8 +26,9 @@ char get_rand_letter(char* arr, int arr_length)
     return arr[rand() % arr_length];
 }
 
-float simple_exercise(
+float gibberish_words_exercise(
     int amount_of_symbols,
+    int word_length,
     char* letters_to_practise,
     int letters_arr_length
 )
@@ -35,7 +36,7 @@ float simple_exercise(
     int mistakes = 0;
     int start_line = 0;
 
-    for (int i = 0; i < amount_of_symbols; i++)
+    for (int i = 0; i < amount_of_symbols; )
     {
         char rand_char = get_rand_letter(
             letters_to_practise,
@@ -61,6 +62,9 @@ float simple_exercise(
         mvaddch(start_line, i, rand_char);
         refresh();
         attroff(COLOR_PAIR(color_num));
+
+        // puts whitespace after each "word"
+        i += (++i % (word_length + 1) == word_length);
     }
         
     return (float)(amount_of_symbols - mistakes) / amount_of_symbols;
@@ -95,16 +99,18 @@ void offer_next_screen()
 void test()
 {
     int symobols_in_exercise = 47;
+    int word_length = 5;
 
     for (int i = 1; i < 16; i++)
     {
         struct TimeHolder timer;
         gettimeofday(&timer.start, NULL);
 
-        float ratio = simple_exercise(
+        float ratio = gibberish_words_exercise(
             symobols_in_exercise,
+            word_length,
             LEARNER_SEQUENCE,
-            1 + i * 2
+            i * 2
         );
         
         gettimeofday(&timer.end, NULL);
