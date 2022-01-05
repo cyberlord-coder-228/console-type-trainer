@@ -36,7 +36,11 @@ float gibberish_words_exercise(
     int mistakes = 0;
     int start_line = 0;
 
-    for (int i = 0; i < amount_of_symbols; )
+    for (
+        int i = 0;
+        i < amount_of_symbols;
+        i += (++i % (word_length + 1) == word_length)
+    )
     {
         char rand_char = get_rand_letter(
             letters_to_practise,
@@ -62,9 +66,6 @@ float gibberish_words_exercise(
         mvaddch(start_line, i, rand_char);
         refresh();
         attroff(COLOR_PAIR(color_num));
-
-        // puts whitespace after each "word"
-        i += (++i % (word_length + 1) == word_length);
     }
         
     return (float)(amount_of_symbols - mistakes) / amount_of_symbols;
@@ -73,15 +74,15 @@ float gibberish_words_exercise(
 void print_how_good_user_was(float correct_ratio, int wpm)
 {
     char* postfix;
-
-    if (correct_ratio == 0.0)      postfix = "did you even try?";
-    else if (correct_ratio < 0.2)  postfix = "you can do better!";
-    else if (correct_ratio < 0.4)  postfix = "keep practicing!";
-    else if (correct_ratio < 0.6)  postfix = "you are half way here!";
-    else if (correct_ratio < 0.8)  postfix = "you have done quite good!";
-    else if (correct_ratio < 1.0)  postfix = "you have done great!";
-    else if (correct_ratio == 1.0) postfix = ". Perfect!";
-    else postfix = ". Wait what? How that`s even possible?";
+    if (correct_ratio == 1.0) postfix = ". Perfect!";
+    if (correct_ratio < 1.0)  postfix = "you have done great!";
+    if (correct_ratio < 0.8)  postfix = "you have done quite good!";
+    if (correct_ratio < 0.6)  postfix = "you are half way here!";
+    if (correct_ratio < 0.4)  postfix = "keep practicing!";
+    if (correct_ratio < 0.2)  postfix = "you can do better!";
+    if (correct_ratio == 0.0) postfix = "did you even try?";
+    if (correct_ratio > 1.0 || correct_ratio < 0.0)
+        postfix = ". Wait what? How that`s even possible?";
 
     printw("\nYour accuracy was %.1f percent, %s", correct_ratio*100, postfix);
     printw("\nYour average speed was %d words per minute", wpm);
