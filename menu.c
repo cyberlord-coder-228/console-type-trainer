@@ -54,24 +54,12 @@ int main()
 	{
 		int user_input = wgetch(in_game_window);
 
-		// right pad with spaces to make the items appear with even width.
+		// deselect previous selection
 		mvwprintw(in_game_window, selected_line, 0, "%s", LIST[selected_line]);
 		
 		// use a variable to increment or decrement the value based on the input.
 		switch(user_input)
 		{
-			case KEY_UP:
-			{
-				selected_line = (--selected_line >= 0)
-					? selected_line : AMOUNT_OF_MENU_OPTIONS - 1;
-				break;
-			}
-			case KEY_DOWN:
-			{
-				selected_line = (++selected_line < AMOUNT_OF_MENU_OPTIONS)
-					? selected_line : 0;
-				break;
-			}
 			case MY_KEY_ENTER:
 			{
 				switch (selected_line)
@@ -92,9 +80,21 @@ int main()
 					}
 				}
 			}
+			case KEY_UP:
+			{
+				selected_line = (--selected_line >= 0)
+					? selected_line : AMOUNT_OF_MENU_OPTIONS - 1;
+				break;
+			}
+			case KEY_DOWN:
+			{
+				selected_line = (++selected_line < AMOUNT_OF_MENU_OPTIONS)
+					? selected_line : 0;
+				break;
+			}
 		}
 
-		// now highlight the next item in the list.
+		// highlight selected item
 		wattron(in_game_window, A_STANDOUT);
 		mvwprintw(in_game_window, selected_line, 0, "%s", LIST[selected_line]);
 		wattroff(in_game_window, A_STANDOUT);

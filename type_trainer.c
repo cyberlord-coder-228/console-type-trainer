@@ -3,8 +3,9 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
-#include <locale.h>
-//#include <uchar.h>
+
+#define IN_GAME_WINDOW_WIDTH 63
+#define IN_GAME_WINDOW_HEIGHT 27
 
 
 enum
@@ -15,7 +16,6 @@ enum
 
 char* LATIN_LETTERS = "abcdefghijklmnopqrstuvwxyz";             // has length 26
 char* LEARNER_SEQUENCE = "fjdksla;ghrueiwoqptyvmc,x.z/bn";      // has length 30
-char* LEARNER_SEQUENCE_UKR = "аовлідфжпркгушцщйзенмьсбчюя.ит";  // has lenght 30
 
 
 struct TimeHolder
@@ -30,6 +30,7 @@ char get_rand_letter(char* arr, int arr_length)
 }
 
 float gibberish_words_exercise(
+    WINDOW* active_window,
     int amount_of_symbols,
     int word_length,
     char* letters_to_practise,
@@ -49,8 +50,8 @@ float gibberish_words_exercise(
             letters_to_practise,
             letters_arr_length
         );
-        mvaddch(start_line, i, rand_char);
-        refresh();
+        mvwaddch(active_window, start_line, i, rand_char);
+        wrefresh(active_window);
 
         char user_input = getch();
 
@@ -65,16 +66,20 @@ float gibberish_words_exercise(
             color_num = RED_BACKGROUND_NUM;
         }
 
-        attrset(COLOR_PAIR(color_num));
-        mvaddch(start_line, i, rand_char);
-        refresh();
-        attroff(COLOR_PAIR(color_num));
+        wattrset(active_window, COLOR_PAIR(color_num));
+        mvwaddch(active_window, start_line, i, rand_char);
+        wrefresh(active_window);
+        wattroff(active_window, COLOR_PAIR(color_num));
     }
         
     return (float)(amount_of_symbols - mistakes) / amount_of_symbols;
 }
 
-void print_how_good_user_was(float correct_ratio, int wpm)
+void print_how_good_user_was(
+    WINDOW* active_window,
+    float correct_ratio,
+    int wpm
+)
 {
     char* postfix;
     if (correct_ratio == 1.0)      postfix = ". Perfect!";
@@ -86,20 +91,29 @@ void print_how_good_user_was(float correct_ratio, int wpm)
     else if (correct_ratio == 0.0) postfix = "did you even try?";
     else postfix = ". Wait what? How that`s even possible?";
 
-    printw("\nYour accuracy was %.1f percent, %s", correct_ratio*100, postfix);
-    printw("\nYour average speed was %d words per minute", wpm);
-    refresh();
+    wprintw(
+        active_window,
+        "\nYour accuracy was %.1f percent, %s",
+        correct_ratio*100,
+        postfix
+    );
+    wprintw(
+        active_window,
+        "\nYour average speed was %d words per minute",
+        wpm
+    );
+    wrefresh(active_window);
 }
 
-void offer_next_screen()
+void offer_next_screen(WINDOW* active_window)
 {
-    printw("\n(Type in anything to continue.)");
-    refresh();
+    wprintw(active_window, "\n(Type in anything to continue.)");
+    wrefresh(active_window);
     getch();
     clear();
 }
 
-void test()
+void test(WINDOW* active_window)
 {
     int symobols_in_exercise = 47;
     int word_length = 5;
@@ -110,9 +124,10 @@ void test()
         gettimeofday(&timer.start, NULL);
 
         float ratio = gibberish_words_exercise(
+            active_window,
             symobols_in_exercise,
             word_length,
-            LEARNER_SEQUENCE_UKR,
+            LEARNER_SEQUENCE,
             i * 2
         );
         
@@ -125,32 +140,37 @@ void test()
         int user_speed_wpm =
             (int)(12 * (float)symobols_in_exercise / (float)time_spent_seconds);
 
-        print_how_good_user_was(ratio, user_speed_wpm);
-        offer_next_screen();
+        print_how_good_user_was(active_window, ratio, user_speed_wpm);
+        offer_next_screen(active_window);
     }
 }
 
 int main()
 {
-    setlocale(LC_ALL, "Ukrainian");
-    SetConsoleOutputCP(866);
-
     srand(time(NULL));
 
-    initscr();                  // Starts ncurses
+    initscr();                      // Starts ncurses
 
-    cbreak();                   // Makes typed characters immediately available
-    noecho();                   // Keyboard input not printed
-    scrollok(stdscr, FALSE);    // Scroll disabled
-    keypad(NULL, TRUE);         // Getch returns special stuff from arrow keys
-    start_color();              // Enables colors
+    WINDOW* in_game_window = newwin(
+        IN_GAME_WINDOW_HEIGHT,
+        IN_GAME_WINDOW_WIDTH,
+        0,
+        0
+    );
 
+    cbreak();                       // Makes typed stuff immediately available
+    noecho();                       // Keyboard input not printed
+    scrollok(stdscr, FALSE);        // Scroll disabled
+    keypad(in_game_window, TRUE);   // Getch returns special stuff from arrows
+
+    start_color();                  // Enables colors
     init_pair(RED_BACKGROUND_NUM, COLOR_BLACK, COLOR_RED);
     init_pair(GREEN_BACKGROUND_NUM, COLOR_BLACK, COLOR_GREEN);
 
-    test();
+    test(in_game_window);
 
-    endwin();                   // Ends ncurses mode
+    delwin(in_game_window);
+    endwin();                       // Ends ncurses mode
 
     return 0;
 }
