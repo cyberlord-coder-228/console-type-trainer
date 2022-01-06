@@ -5,8 +5,10 @@
 #define AMOUNT_OF_MENU_OPTIONS 3
 #define LONGEST_OPTION_LENGTH 20
 
-#define IN_GAME_WINDOW_WIDTH 63
-#define IN_GAME_WINDOW_HEIGHT 27
+#define TOP_PADDING 0
+#define LEFT_PADDING 0
+#define menu_WINDOW_WIDTH 63
+#define menu_WINDOW_HEIGHT 27
 
 #define MY_KEY_ENTER 10
 
@@ -18,65 +20,59 @@ const char LIST[AMOUNT_OF_MENU_OPTIONS][LONGEST_OPTION_LENGTH] = {
 
 enum
 {
-	BASIC = 0,
-	LEVEL_SELECT = 1,
-	EXIT = 2
+	BASIC_MENU_OPTION = 0,
+	LEVEL_SELECT_MENU_OPTION = 1,
+	EXIT_MENU_OPTION = 2
 };
 
-
-int main()
+void print_menu(WINDOW* active_window)
 {
-	initscr();						// starts ncurses
-
-	WINDOW* in_game_window = newwin(
-		IN_GAME_WINDOW_HEIGHT,
-		IN_GAME_WINDOW_WIDTH,
-		0,
-		0
-	);
-
-	noecho();						// keyboard input not printed
-	keypad(in_game_window, TRUE);	// getch returns special stuff from arrows
-	curs_set(0);					// hide cursor
-
-	// print all the menu items, highlighting the first one
-	wattron(in_game_window, A_STANDOUT);
+	wattron(active_window, A_STANDOUT);
 	for (int i = 0; i < AMOUNT_OF_MENU_OPTIONS; i++)
 	{
-		mvwprintw(in_game_window, i, 0, "%s", LIST[i]);
-		wattroff(in_game_window, A_STANDOUT);
+		mvwprintw(active_window, i, LEFT_PADDING, "%s", LIST[i]);
+		wattroff(active_window, A_STANDOUT);
 	}
-	wrefresh(in_game_window);
+	wrefresh(active_window);
+}
 
-	// execution
-	int selected_line = 0;
+void loop_menu(WINDOW* active_window, int sel_line)
+{
+	int selected_line = sel_line;
 	while(1)
 	{
-		int user_input = wgetch(in_game_window);
-
-		// deselect previous selection
-		mvwprintw(in_game_window, selected_line, 0, "%s", LIST[selected_line]);
+		int user_input = wgetch(active_window);
 		
-		// use a variable to increment or decrement the value based on the input.
+		// deselect previous selection
+		wattroff(active_window, A_STANDOUT);
+		mvwprintw(
+			active_window,
+			selected_line,
+			LEFT_PADDING,
+			"%s",
+			LIST[selected_line]
+		);
+		wrefresh(active_window);
+
 		switch(user_input)
 		{
 			case MY_KEY_ENTER:
 			{
 				switch (selected_line)
 				{
-					case BASIC:
+					case BASIC_MENU_OPTION:
 					{
 						break;
 					}
-					case LEVEL_SELECT:
+					case LEVEL_SELECT_MENU_OPTION:
 					{
 						break;
 					}
-					case EXIT:
+					case EXIT_MENU_OPTION:
 					{
-						delwin(in_game_window);
+						delwin(active_window);
 						endwin();
-						return 0;
+						return;
 					}
 				}
 			}
@@ -95,13 +91,38 @@ int main()
 		}
 
 		// highlight selected item
-		wattron(in_game_window, A_STANDOUT);
-		mvwprintw(in_game_window, selected_line, 0, "%s", LIST[selected_line]);
-		wattroff(in_game_window, A_STANDOUT);
-
+		wattron(active_window, A_STANDOUT);
+		mvwprintw(
+			active_window,
+			selected_line, 
+			LEFT_PADDING,
+			"%s",
+			LIST[selected_line]
+		);
+		wrefresh(active_window);
 	}
+}
 
-	delwin(in_game_window);
+
+int main()
+{
+	initscr();						// starts ncurses
+
+	WINDOW* menu_window = newwin(
+		menu_WINDOW_HEIGHT,
+		menu_WINDOW_WIDTH,
+		LEFT_PADDING,
+		TOP_PADDING
+	);
+
+	noecho();						// keyboard input not printed
+	keypad(menu_window, TRUE);		// getch returns special stuff from arrows
+	curs_set(0);					// hide cursor
+
+	print_menu(menu_window);
+	loop_menu(menu_window, 0);
+
+	delwin(menu_window);
 	endwin();
 
 	return 0;
