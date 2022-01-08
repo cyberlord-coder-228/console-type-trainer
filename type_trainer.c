@@ -4,8 +4,10 @@
 #include <time.h>
 #include <sys/time.h>
 
-#define IN_GAME_WINDOW_WIDTH 63
-#define IN_GAME_WINDOW_HEIGHT 27
+#define WINDOW_WIDTH 63
+#define WINDOW_HEIGHT 27
+
+const int WPM_EQUATION_CONSTANT = 12;
 
 
 enum
@@ -14,8 +16,8 @@ enum
     GREEN_BACKGROUND_NUM = 2
 };
 
-char* LATIN_LETTERS = "abcdefghijklmnopqrstuvwxyz";             // has length 26
-char* LEARNER_SEQUENCE = "fjdksla;ghrueiwoqptyvmc,x.z/bn";      // has length 30
+char* LATIN_LETTERS = "abcdefghijklmnopqrstuvwxyz";        // 26 symbols
+char* LEARNER_SEQUENCE = "fjdksla;ghrueiwoqptyvmc,x.z/bn"; // 30 symbols
 
 
 struct TimeHolder
@@ -34,11 +36,11 @@ float gibberish_words_exercise(
     int amount_of_symbols,
     int word_length,
     char* letters_to_practise,
-    int letters_arr_length
+    int letters_arr_length,
+    int start_line
 )
 {
     int mistakes = 0;
-    int start_line = 0;
 
     for (
         int i = 0;
@@ -83,12 +85,12 @@ void print_how_good_user_was(
 {
     char* postfix;
     if (correct_ratio == 1.0)      postfix = ". Perfect!";
-    else if (correct_ratio < 1.0)  postfix = "you have done great!";
-    else if (correct_ratio < 0.8)  postfix = "you have done quite good!";
-    else if (correct_ratio < 0.6)  postfix = "you are half way here!";
-    else if (correct_ratio < 0.4)  postfix = "keep practicing!";
-    else if (correct_ratio < 0.2)  postfix = "you can do better!";
-    else if (correct_ratio == 0.0) postfix = "did you even try?";
+    else if (correct_ratio > 0.8)  postfix = "you have done great!";
+    else if (correct_ratio > 0.6)  postfix = "you have done quite good!";
+    else if (correct_ratio > 0.4)  postfix = "you are half way here!";
+    else if (correct_ratio > 0.2)  postfix = "keep practicing!";
+    else if (correct_ratio > 0.0)  postfix = "you can do better!";
+    else if (correct_ratio == .0)  postfix = "did you even try?";
     else postfix = ". Wait what? How that`s even possible?";
 
     wprintw(
@@ -113,11 +115,12 @@ void offer_next_screen(WINDOW* active_window)
     clear();
 }
 
-void test(WINDOW* active_window)
+void test(
+    WINDOW* active_window,
+    int symobols_in_exercise,
+    int word_length
+)
 {
-    int symobols_in_exercise = 47;
-    int word_length = 5;
-
     for (int i = 1; i < 16; i++)
     {
         struct TimeHolder timer;
@@ -128,17 +131,19 @@ void test(WINDOW* active_window)
             symobols_in_exercise,
             word_length,
             LEARNER_SEQUENCE,
-            i * 2
+            i * 2,
+            0
         );
         
         gettimeofday(&timer.end, NULL);
 
         int time_spent_seconds = timer.end.tv_sec - timer.start.tv_sec;
         
-        // 12 is a constant from wpm equation
-        // wpm = typed_symbols / time (sec) * 60 (sec) / 5 (average word length)
-        int user_speed_wpm =
-            (int)(12 * (float)symobols_in_exercise / (float)time_spent_seconds);
+        int user_speed_wpm = (int)(
+            WPM_EQUATION_CONSTANT
+            * (float)symobols_in_exercise
+            / (float)time_spent_seconds
+        );
 
         print_how_good_user_was(active_window, ratio, user_speed_wpm);
         offer_next_screen(active_window);
@@ -152,8 +157,8 @@ int main()
     initscr();                      // Starts ncurses
 
     WINDOW* in_game_window = newwin(
-        IN_GAME_WINDOW_HEIGHT,
-        IN_GAME_WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+        WINDOW_WIDTH,
         0,
         0
     );
@@ -162,12 +167,13 @@ int main()
     noecho();                       // Keyboard input not printed
     scrollok(stdscr, FALSE);        // Scroll disabled
     keypad(in_game_window, TRUE);   // Getch returns special stuff from arrows
+    curs_set(0);
 
     start_color();                  // Enables colors
     init_pair(RED_BACKGROUND_NUM, COLOR_BLACK, COLOR_RED);
     init_pair(GREEN_BACKGROUND_NUM, COLOR_BLACK, COLOR_GREEN);
 
-    test(in_game_window);
+    test(in_game_window, 47, 5);
 
     delwin(in_game_window);
     endwin();                       // Ends ncurses mode

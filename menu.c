@@ -7,8 +7,9 @@
 
 #define TOP_PADDING 0
 #define LEFT_PADDING 0
-#define menu_WINDOW_WIDTH 63
-#define menu_WINDOW_HEIGHT 27
+
+#define WINDOW_WIDTH 63
+#define WINDOW_HEIGHT 27
 
 #define MY_KEY_ENTER 10
 
@@ -30,7 +31,7 @@ void print_menu(WINDOW* active_window)
 	wattron(active_window, A_STANDOUT);
 	for (int i = 0; i < AMOUNT_OF_MENU_OPTIONS; i++)
 	{
-		mvwprintw(active_window, i, LEFT_PADDING, "%s", LIST[i]);
+		mvwprintw(active_window, i, LEFT_PADDING, "%.20s", LIST[i]);
 		wattroff(active_window, A_STANDOUT);
 	}
 	wrefresh(active_window);
@@ -109,8 +110,8 @@ int main()
 	initscr();						// starts ncurses
 
 	WINDOW* menu_window = newwin(
-		menu_WINDOW_HEIGHT,
-		menu_WINDOW_WIDTH,
+		WINDOW_HEIGHT,
+		WINDOW_WIDTH,
 		LEFT_PADDING,
 		TOP_PADDING
 	);
